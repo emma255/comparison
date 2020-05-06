@@ -1,13 +1,14 @@
 -- phpMyAdmin SQL Dump
--- version 4.6.6deb5
+-- version 5.0.2
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost:3306
--- Generation Time: May 06, 2020 at 12:26 AM
--- Server version: 5.7.30-0ubuntu0.18.04.1
--- PHP Version: 7.3.17-1+ubuntu18.04.1+deb.sury.org+1
+-- Host: 127.0.0.1
+-- Generation Time: May 06, 2020 at 01:53 AM
+-- Server version: 10.4.11-MariaDB
+-- PHP Version: 7.3.17
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
+START TRANSACTION;
 SET time_zone = "+00:00";
 
 
@@ -119,14 +120,14 @@ CREATE TABLE `customerdeliverylocations` (
   `name` varchar(60) NOT NULL,
   `description` varchar(100) NOT NULL,
   `latitude` varchar(20) NOT NULL,
-  `logitude` varchar(20) NOT NULL
+  `longitude` varchar(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `customerdeliverylocations`
 --
 
-INSERT INTO `customerdeliverylocations` (`id`, `customer_id`, `name`, `description`, `latitude`, `logitude`) VALUES
+INSERT INTO `customerdeliverylocations` (`id`, `customer_id`, `name`, `description`, `latitude`, `longitude`) VALUES
 (1, 1, 'linux based', 'near nssf', '36t7', '576TE'),
 (2, 1, 'programmer', 'near nssf', '36t7', '576TE');
 
@@ -284,21 +285,6 @@ INSERT INTO `operators` (`id`, `firstName`, `middleName`, `lastName`, `nationalI
 -- --------------------------------------------------------
 
 --
--- Table structure for table `orderiterms`
---
-
-CREATE TABLE `orderiterms` (
-  `id` int(11) NOT NULL,
-  `price` varchar(12) NOT NULL,
-  `quantity` int(11) NOT NULL,
-  `status` varchar(10) NOT NULL,
-  `iterm_id` int(11) NOT NULL,
-  `order_id` int(11) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
--- --------------------------------------------------------
-
---
 -- Table structure for table `orders`
 --
 
@@ -310,16 +296,55 @@ CREATE TABLE `orders` (
   `customer_id` int(11) NOT NULL,
   `customerdeliverylocation_id` int(11) NOT NULL,
   `bodaboda_id` int(11) NOT NULL,
-  `collector_id` int(11) NOT NULL
+  `collector_id` int(11) NOT NULL,
+  `pickup_latitude` varchar(15) DEFAULT NULL,
+  `pickup_longitude` varchar(15) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 --
 -- Dumping data for table `orders`
 --
 
-INSERT INTO `orders` (`id`, `orderReference`, `dateTime`, `status`, `customer_id`, `customerdeliverylocation_id`, `bodaboda_id`, `collector_id`) VALUES
-(2, '84569', '0000-00-00 00:00:00', 'OnDelivery', 1, 1, 1, 1),
-(3, '3553', '2020-04-03 04:14:08', 'OnDelivery', 1, 2, 2, 1);
+INSERT INTO `orders` (`id`, `orderReference`, `dateTime`, `status`, `customer_id`, `customerdeliverylocation_id`, `bodaboda_id`, `collector_id`, `pickup_latitude`, `pickup_longitude`) VALUES
+(2, '84569', '0000-00-00 00:00:00', 'stage 5', 1, 1, 1, 1, NULL, NULL),
+(3, '3553', '2020-04-03 04:14:08', 'stage 5', 1, 2, 2, 1, NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `order_items`
+--
+
+CREATE TABLE `order_items` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `item_id` int(11) NOT NULL,
+  `order_id` int(11) NOT NULL,
+  `price` double(10,2) DEFAULT 0.00,
+  `quantity` int(11) NOT NULL,
+  `status` tinyint(1) NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+--
+-- Dumping data for table `order_items`
+--
+
+INSERT INTO `order_items` (`id`, `item_id`, `order_id`, `price`, `quantity`, `status`) VALUES
+(1, 80, 3, 0.00, 4, 0),
+(2, 3, 2, 0.00, 2, 0),
+(17, 22, 2, 0.00, 4, 0),
+(18, 17, 3, 0.00, 4, 0),
+(19, 28, 3, 0.00, 4, 0),
+(20, 11, 2, 0.00, 4, 0),
+(21, 4, 2, 0.00, 4, 0),
+(22, 32, 2, 0.00, 4, 0),
+(23, 31, 2, 0.00, 4, 0),
+(24, 67, 2, 0.00, 4, 0),
+(25, 12, 2, 0.00, 4, 0),
+(26, 5, 3, 0.00, 4, 0),
+(27, 42, 3, 0.00, 4, 0),
+(28, 23, 3, 0.00, 4, 0),
+(29, 56, 3, 0.00, 4, 0),
+(30, 3, 3, 0.00, 2, 0);
 
 -- --------------------------------------------------------
 
@@ -442,19 +467,19 @@ ALTER TABLE `operators`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `orderiterms`
---
-ALTER TABLE `orderiterms`
-  ADD PRIMARY KEY (`id`,`iterm_id`,`order_id`),
-  ADD KEY `fk_orderiterms_orders1_idx` (`order_id`),
-  ADD KEY `fk_orderiterms_iterms1` (`iterm_id`);
-
---
 -- Indexes for table `orders`
 --
 ALTER TABLE `orders`
   ADD PRIMARY KEY (`id`,`customer_id`),
   ADD KEY `fk_orders_customers1_idx` (`customer_id`);
+
+--
+-- Indexes for table `order_items`
+--
+ALTER TABLE `order_items`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `item_id` (`item_id`),
+  ADD KEY `order_id` (`order_id`);
 
 --
 -- Indexes for table `payments`
@@ -490,80 +515,102 @@ ALTER TABLE `users`
 --
 ALTER TABLE `bodabodas`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
 --
 -- AUTO_INCREMENT for table `categories`
 --
 ALTER TABLE `categories`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
 --
 -- AUTO_INCREMENT for table `collectors`
 --
 ALTER TABLE `collectors`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
 --
 -- AUTO_INCREMENT for table `companyprofiles`
 --
 ALTER TABLE `companyprofiles`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
 --
 -- AUTO_INCREMENT for table `customerdeliverylocations`
 --
 ALTER TABLE `customerdeliverylocations`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
 --
 -- AUTO_INCREMENT for table `customers`
 --
 ALTER TABLE `customers`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
 --
 -- AUTO_INCREMENT for table `items`
 --
 ALTER TABLE `items`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=83;
+
 --
 -- AUTO_INCREMENT for table `operators`
 --
 ALTER TABLE `operators`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
---
--- AUTO_INCREMENT for table `orderiterms`
---
-ALTER TABLE `orderiterms`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
 --
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `order_items`
+--
+ALTER TABLE `order_items`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+
 --
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
 --
 -- AUTO_INCREMENT for table `shops`
 --
 ALTER TABLE `shops`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
 --
 -- AUTO_INCREMENT for table `stores`
 --
 ALTER TABLE `stores`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `order_items`
+--
+ALTER TABLE `order_items`
+  ADD CONSTRAINT `order_items_ibfk_1` FOREIGN KEY (`item_id`) REFERENCES `items` (`id`),
+  ADD CONSTRAINT `order_items_ibfk_2` FOREIGN KEY (`order_id`) REFERENCES `orders` (`id`);
 
 --
 -- Constraints for table `payments`
 --
 ALTER TABLE `payments`
   ADD CONSTRAINT `fk_payments_customers1` FOREIGN KEY (`customers_id`) REFERENCES `customers` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION;
+COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
